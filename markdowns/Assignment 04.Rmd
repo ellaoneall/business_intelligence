@@ -1,0 +1,44 @@
+---
+title: "Assignment 4"
+author: "Ella O'Neall"
+date: "2026-09-13"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: show
+    code_download: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+con = DBI::dbConnect(RSQLite::SQLite(), "data/midwest_airbnb.db")
+listings = DBI::dbReadTable(con, "listings")
+```
+
+```{r Q1}
+nrow(listings)
+```
+```{r Q2}
+table(listings$city)
+sum(listings$city == "Columbus")
+```
+```{r Q3}
+chicago <- listings[listings$city == "Chicago", ]
+max(chicago$price)
+chicago$name[chicago$price == max(chicago$price)]
+```
+```{r Q4}
+length(unique(chicago$neighbourhood))
+```
+```{r Q5}
+sum(listings$host_is_superhost =="t", na.rm = TRUE)
+```
+```{r Q6}
+sum(listings$price > 1000)
+```
+
