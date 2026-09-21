@@ -7,3 +7,5 @@ apps/job_scout_chat/data/scout.db-shm
 apps/job_scout_chat/data/scout.db-wal
 apps/job_scout_chat/shiny_bookmarks/9f6b8743af158192/input.rds
 apps/job_scout_chat/shiny_bookmarks/9f6b8743af158192/values.rds
+.Renviron
+/apps/job_scout_chat
