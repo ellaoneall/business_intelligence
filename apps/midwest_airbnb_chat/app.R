@@ -8,7 +8,7 @@ client = ellmer::chat_openai(
   params = ellmer::params(reasoning_effort = "none")
 )
 
-qc = querychat(
+qc = querychat::querychat(
   con, "listings",
   client   = client,
   tools    = c("filter", "query", "visualize"),  # visualize: charts in the chat (needs ggsql)
