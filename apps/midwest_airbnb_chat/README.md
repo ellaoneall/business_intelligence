@@ -14,3 +14,8 @@ short_description: Ask questions about Airbnb listings in the Midwest
 
 **Live app:** https://midwest-airbnb-chat-eqka.onrender.com
 
+**Example queries:**
+- "How many of the postings are remote?"
+- "Which ten companies have the most postings?"
+- "Show the internship postings in Ohio."
+
