@@ -1,5 +1,6 @@
 # ISA 401 Airbnb Listings: ask questions, get SQL, a table, or a chart back
 library(querychat)
+library(bslib)
 
 con = DBI::dbConnect(RSQLite::SQLite(), "data/midwest_airbnb.db")
 
@@ -17,4 +18,20 @@ qc = querychat::querychat(
   extra_instructions = "data/extra_instructions.md"
 )
 
-qc$app_obj()
+ui <- page_fillable(
+  theme = bs_theme(
+    version = 5,
+    bootswatch = "minty"
+  ),
+  title = "Midwest Airbnb Explorer",
+
+  h2("Midwest Airbnb Explorer"),
+
+  qc$ui()
+)
+
+server <- function(input, output, session){
+  qc$server()
+}
+
+shiny::shinyApp(ui, server)
