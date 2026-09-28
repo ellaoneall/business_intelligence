@@ -28,3 +28,4 @@ short_description: Ask questions about Airbnb listings in the Midwest
 - 3. Create a chart showing the number of listings by room type.
 
 ![Listings by room type](images/question3.png)
+
