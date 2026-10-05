@@ -1,0 +1,75 @@
+---
+title: "Assignment 07"
+author: "Ella O'Neall"
+date: "2026-10-05"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: TRUE
+    code_download: TRUE
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+departments <- c(
+  "Accountancy",
+  "Economics",
+  "Entrepreneurship",
+  "Finance",
+  "Information%20Systems%20--%20Analytics",
+  "Marketing",
+  "Management"
+)
+
+department_names <- c(
+  "Accountancy",
+  "Economics",
+  "Entrepreneurship",
+  "Finance",
+  "Information Systems & Analytics",
+  "Marketing",
+  "Management"
+)
+
+fsb_df <- data.frame()
+
+for (i in 1:length(departments)){
+  dept_url <- paste0("https://miamioh.edu/fsb/directory/?up=/query/all/all/", departments[i], "/all")
+  
+pg <- rvest::read_html(dept_url)
+
+names <- pg |>
+  rvest::html_elements("#sidebar-main table td:nth-child(3) strong a") |>
+  rvest::html_text2()
+
+title <- pg |>
+  rvest::html_elements("#sidebar-main table td:nth-child(3) i") |>
+  rvest::html_text2()
+
+website <- pg |>
+  rvest::html_elements("#sidebar-main table td:nth-child(3) strong a") |>
+  rvest::html_attr("href")
+
+dept_df <- data.frame(
+  department = department_names[i],
+  name = names,
+  position = title,
+  website = website
+)
+
+fsb_df <- rbind(fsb_df, dept_df)
+}
+
+head(fsb_df)
+
+
+# double checking answers
+table(fsb_df$department)
+head(fsb_df$website)
+```
+

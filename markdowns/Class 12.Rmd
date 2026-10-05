@@ -1,0 +1,117 @@
+---
+title: "Class 12: Web Scraping + LLM-based Extraction"
+author: "Ella O'Neall"
+date: "2026-10-05"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: TRUE
+    code_download: TRUE
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## PlaneCrash Info Example
+
+```{r crashes}
+year = 2025
+
+crash_url = paste0('https://www.planecrashinfo.com/', year, '/', year, '.htm')
+
+crash_page <- rvest::read_html(crash_url, encoding = "ISO-8859-1")
+
+# This should now print without the error
+crash_page
+## {html_document}
+## <html>
+## [1] <head>\n<meta http-equiv="Content-Type" content="text/html; charset=UTF-8 ...
+## [2] <body>\n<p align="center"><b><font face="Arial" color="#B0B6FF" size="5"> ...
+# How many <table> elements are on the page?
+crash_tables <- crash_page |>
+  rvest::html_elements("table") |>
+  rvest::html_table()
+
+crash_df = crash_tables[[1]]
+
+# from a cleaning perspective, there are several things that can be changed:
+# [1] Replace the column names with the first row
+# [2] Have better column types (e.g., Date being a date instead of character)
+# [3] There are possible things you can do to clean the data within columns; e.g., split columns that contain multiple pieces of information
+# column 4 has: fatalities/# passengers (ground fatalities)
+
+# for today's class, we will focus on the first two
+
+colnames(crash_df) = crash_df[1, ]
+
+# then delete first row
+crash_df = crash_df[-1, ]
+
+crash_df = crash_df|> 
+  # converts date into a date object
+  dplyr::mutate(Date = lubridate::dmy(Date))
+```
+
+## Salvage Class Game
+```{r game}
+page = rvest::read_html("https://isa401-salvage.vercel.app/registry?start=1")
+classes = page |>
+  rvest::html_elements(".Dreadnought") |>
+  rvest::html_text2()
+length(classes)   # check this first: one per card
+
+# from clicking on the site, we saw that our page changes by 50
+
+
+base = "https://isa401-salvage.vercel.app"
+starts = seq(from = 1, to = 351, by = 50)
+pages = vector("list", length(starts))
+for (i in seq_along(starts)) {
+  pg = rvest::read_html(paste0(base, "/registry?start=", starts[i]))
+  pages[[i]] = data.frame(
+    class = pg |> rvest::html_elements("div > ul > li:nth-child(1) > span") |>
+      rvest::html_text2(),
+    value = pg |> rvest::html_elements("div > ul > li:nth-child(3) > span") |>
+      rvest::html_text() |>
+      readr::parse_number()
+  )
+  Sys.sleep(1)   # robots.txt asks for it
+}
+registry = dplyr::bind_rows(pages)   # 400 rows?
+
+registry |> dplyr::filter(class == "Dreadnought") |> 
+  dplyr::mutate(value = as.numeric(value)) -> Dreadnoughts_df
+
+sum(Dreadnoughts_df$value)
+```
+
+## Structured text extractions
+
+### Course Information
+
+```{r courses}
+chat = ellmer::chat_openai(
+  model = "gpt-5.6-luna", # note that the API key provided only works with 5.6 luna
+  params = ellmer::params(reasoning_effort = "none")
+)
+
+isa125_text = rvest::read_html("https://bulletin.miamioh.edu/courses-instruction/isa/") |>
+  # for this example, only the first course
+  rvest::html_elements("#sc_sccoursedescs > div:nth-child(1) > p.courseblockdesc") |>
+  rvest::html_text2()
+
+course_info <- chat$chat_structured(
+  isa125_text, 
+  type = ellmer::type_object(
+    name = ellmer::type_string(
+      description = "Name of the course. For example, ISA 235. Information Technology and the Intelligent Enterprise. Do not include the parantheses for the credit hour and do not end with a period"
+    ),
+    description = ellmer::type_string(description = "The description of the course without the prereqs."),
+    prereqs = ellmer::type_string("List the information after Prerequisite:")
+  )
+)
+```
+
