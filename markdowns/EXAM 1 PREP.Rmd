@@ -1,0 +1,3067 @@
+---
+title: "EXAM 1 PREP"
+author: "Ella O'Neall"
+date: "2026-10-05"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    code_download: TRUE
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# EXAM: VERIFY AI ANSWERS
+
+## Step 1: Never assume AI code is correct
+
+Run the code and compare its output to the question.
+
+## Step 2: Inspect the data
+
+```{r eval=FALSE}
+names(df)
+dim(df)
+head(df)
+str(df)
+dplyr::glimpse(df)
+```
+
+## Step 3: Check expected dimensions
+
+```{r eval=FALSE}
+nrow(df)
+ncol(df)
+length(x)
+```
+
+## Step 4: Check nested JSON
+
+```{r eval=FALSE}
+names(data)
+str(data)
+data[[2]]
+data$properties
+```
+
+## Step 5: Check scraping results
+
+```{r eval=FALSE}
+page <- rvest::read_html(url)
+
+elements <- page |>
+  rvest::html_elements("CSS SELECTOR")
+
+length(elements)
+
+text <- elements |>
+  rvest::html_text2()
+
+links <- elements |>
+  rvest::html_attr("href")
+```
+
+## Step 6: Check API responses
+
+```{r eval=FALSE}
+response <- httr2::request(url) |>
+  httr2::req_perform()
+
+httr2::resp_status(response)
+
+data <- response |>
+  httr2::resp_body_string() |>
+  jsonlite::fromJSON()
+
+names(data)
+str(data)
+```
+
+## Step 7: Explain AI mistakes
+
+Use this format:
+
+"The AI answer is incorrect because ____.
+When I ran the code / inspected the data, I found ____.
+The correct answer or code is ____."
+
+# 1. R BASICS + DATA STRUCTURES
+
+## 1.1 Objects, vectors, data types
+
+### How to recognize it
+
+If the question asks about:
+- storing values -> object
+- combing multiple values -> `(c)`
+- naming elements -> `names()`
+- determining the type -> `typeof()`
+- testing every value against a condition -> vectorized comparison
+
+### basic objects
+```{r}
+# store a value in an object
+x = 10
+
+# prof uses '=' for assignments in class ex.
+```
+
+### Vectors
+```{r eval=FALSE}
+# c() combines values into a vector
+x = c(1, 2, 3, 4)
+
+# give vector elements names
+names(x) = c("A", "B", "C", "D")
+
+# Check underlying type
+typeof(x)
+```
+
+### Important data types
+```{r eval=FALSE}
+# double/numeric
+x = c(1,2,3)
+typeof(x)
+
+# integer -- L creates an integer
+x_int = c(1L, 2L, 3L)
+typeof(x_int)
+
+# character
+x_char = c("Miami", "Ohio", "Denver")
+typeof(x_char)
+
+# logical
+x_logical = c(TRUE, FALSE, TRUE)
+typeof(x_logical)
+```
+
+### Class example: Cincinnati Crashes
+```{r eval=FALSE}
+crashes_per_day = 30125/365
+
+crashes_by_day = c(2020, 2241, 2327, 2285, 2380, 1866, 1664)
+
+names(crashes_by_day) = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+# check each day against a condition
+crashes_by_day > 2100
+
+# check data type
+typeof(crashes_by_day)
+```
+
+### Exam pattern
+`c()` = combine values into a vector
+`names()` = assign/retrieve names
+`typeof()` = determine underlying data type
+
+A comparison on a vector happens element-by-element:
+```{r eval=FALSE}
+x > value
+```
+returns TRUE/FALSE for each element.
+
+## 1.2 Subsetting Vectors
+
+### How to recognize it
+
+You can subset a vector using:
+1. position
+2. name
+3. logical condition
+
+### Subset by Position
+```{r eval=FALSE}
+x = c(10,20,30,40)
+
+# return 3rd value
+x[3]
+
+# return multiple positions
+x[c(1, 3)]
+```
+
+### Subset by Name
+```{r eval = FALSE}
+crashes_by_day = c(2020, 2241, 2327, 2285, 2380, 1866, 
+                   1664)
+names(crashes_by_day) = c("Mon", "Tue", "Wed", "Thu", 
+                          "Fri", "Sat", "Sun")
+
+# Pull elements by their names
+crashes_by_day[c("Wed", "Fri")]
+```
+
+### Logical Subsetting
+```{r eval = FALSE}
+# first creates TRUE/FALSE for every observation
+crashes_by_day > 2100
+
+# put the condition inside [] to return the ACTUAL VALUES
+crashes_by_day[crashes_by_day > 2100]
+```
+
+### Exam Pattern
+```{r eval=FALSE}
+# by position
+vector[c(position1, position2)]
+
+# by name
+vector[c("name1", "name2")]
+
+# by condition 
+vector[condition]
+```
+
+**Key Difference**:
+`x>value` -> returns TRUE/FALSE
+`x[x>value]` -> returns the actual values where the condition is TRUE
+
+### Class example to remember
+Cincinnati crashes:
+```{r eval=FALSE}
+crashes_by_day[c("Wed", "Fri")]
+```
+= select Wednesday and Friday by **name**.
+
+
+## 1.3 Lists and Extracting Elements
+
+Ways to access a list:
+`[ ]` = subset -> keeps the list structure
+`[[ ]]` = extract -> pulls the actual element out
+`$` = extract an element by its name
+
+### Class example: google job ad
+```{r eval = FALSE}
+job = list(
+  title = "Research Data Scientist, Magic Eye", 
+  company = "Google",
+  salary = list(min = 147000, max = 210000)
+)
+```
+
+The structure is:
+
+job  
+→ title  
+→ company  
+→ salary  
+&nbsp;&nbsp;&nbsp;&nbsp;→ min  
+&nbsp;&nbsp;&nbsp;&nbsp;→ max
+
+### Extract by position with [[ ]]
+```{r eval=FALSE}
+# extract the second element = company
+job[[2]]
+
+# extract salary (3rd element), then max (2nd element inside salary)
+job[[3]][[2]]
+```
+
+### Extract by Name with $
+```{r eval=FALSE}
+# extract company
+job$company
+
+# go into salary and extract max
+job$salary$max
+
+# go into salary and extract min
+job$salary$min
+```
+
+### [ ] VS [[ ]]
+```{r eval=FALSE}
+# keep the result as a smaller list
+job[2]
+
+# extracts the actual value from the list
+job[[2]]
+```
+
+**KEY DIFFERENCE**:
+`job[2]` -> a smaller list containing company
+
+`job[[2]]` -> the value `"Google"`
+
+### Same result, different method
+```{r eval=FALSE}
+# by names
+job$salary$max
+
+# by positions
+job[[3]][[2]]
+
+# both return 210000
+```
+
+### EXAM QUICK FIND
+
+If the question asks me to:
+
+- keep part of a list → `[ ]`
+- extract an element by position → `[[ ]]`
+- extract an element by name → `$`
+- access a nested list → follow each level using `$` or `[[ ]]`
+
+## 1.4 Data Frames and Row/Column Subsetting
+
+To access a column by name:
+```{r eval = FALSE}
+dataframe$column
+```
+
+To subset rows and columns:
+```{r eval=FALSE}
+dataframe[rows, columns]
+```
+
+**IMPORTANT**:
+- before the comma = ROWS
+- after the comma = COLUMNS
+
+### Example data frame
+```{r eval=FALSE}
+students = data.frame(
+  name = c("Ella", "Mia", "Jack"),
+  grade = c(90, 85, 95)
+)
+```
+
+### Access a column with $
+```{r eval=FALSE}
+students$grade
+```
+returns the values in the `grade` column.
+
+### Subset by row & column position
+```{r eval=FALSE}
+# Row 2, column 1
+students[2, 1]
+
+# Row 3, column 2
+students[3, 2]
+```
+
+Pattern:
+```{r eval=FALSE}
+dataframe[row, column]
+```
+
+### Select mulitple rows
+use `c()` when selecting multiple positions
+
+```{r eval=FALSE}
+# rows 1 and 3 from the grade column
+students[c(1, 3), "grade"]
+```
+
+### select multiple columns
+```{r eval=FALSE}
+# row 2 from the name and grade columns
+students[2, c("name", "grade")]
+```
+
+**ROW FIRST, COLUMN SECOND**
+
+## 2.1 Importing Excel Files
+
+If the file ends in `.xlsx` or `.xls` use:
+```{r eval=FALSE}
+readxl::read_excel()
+```
+
+### Class example
+```{r}
+occupation = readxl::read_excel(
+  path="../data/occupation.xlsx", 
+  sheet = 5, 
+  skip = 1
+)
+```
+
+### what each part does
+
+`path = "../data/occupation.xlsx"`
+`../` = go up one directory
+`data/` = enter the data folder
+`occupation.xlsx` = Excel file to import
+
+`sheet = 5`
+- Read the 5th sheet in the workbook
+
+Also be selected by name:
+```{r}
+sheet = "Table 1.4"
+```
+
+`skip = 1`
+- skip the first row before reading the data
+- useful when there are extra title/header rows above the actual data
+
+### General Template
+```{r eval=FALSE}
+df = readxl::read_excel(
+  path = "../data/file.xlsx",
+  sheet = "Sheet Name", 
+  skip = number_of_rows_to_skip
+)
+```
+
+## 2.2 Importing CSV Files
+
+If the data is a `.csv` file, use:
+```{r eval=FALSE}
+readr::read_csv()
+```
+
+### General Template
+```{r eval = False}
+df = readr::read_csv("../data/file/csv")
+
+# can also come directly from a URL
+
+df = readr::read_csv(
+  "..."
+)
+
+# inspect the imported data, including columns and variable types
+dplyr::glimpse(df)
+```
+
+## Importing and Navigating JSON
+
+```{r eval = FALSE}
+jsonlite::fromJSON()
+```
+JSON can contain nested structures, so after importing I may need:
+
+- `$` to access an element by name
+- `[[ ]]` to extract an element
+- `[row, column]` once I reach a data frame
+
+## Class example
+```{r eval=FALSE}
+campus = jsonlite::fromJSON(
+  "https://isa401-find-your-seat.vercel.app/campus.json"
+)
+
+names(campus)
+```
+
+Extract Farmer by name:
+```{r}
+fsb = campus$Farmer
+
+# can also be accessed usong
+
+campus[['Farmer']]
+
+# or by position
+
+campus[[5]]
+```
+
+### navigating nested JSON
+```{r}
+fsb$code
+
+fsb[[8]]$`2`$sections
+```
+
+Read nested code LEFT TO RIGHT:
+
+`fsb[[8]]`
+→ extract the 8th element from `fsb`
+
+`$`2``
+→ access the component named `2`
+
+`$sections`
+→ access the component named `sections`
+
+### EXAM QUICK FIND
+
+CSV → `readr::read_csv()`
+
+Excel → `readxl::read_excel()`
+
+JSON → `jsonlite::fromJSON()`
+
+Inspect data → `dplyr::glimpse()`
+
+Named component → `$`
+
+Extract element → `[[ ]]`
+
+Data frame → `[rows, columns]`
+
+Nested JSON → read the code LEFT TO RIGHT, one level at a time
+
+## 2.4 Exporting Data
+
+CSV -> `readr::read_csv()`
+Excel -> `writeal::write_xlsx()`
+
+### Export to CSV
+```{r}
+readr::write_csv(airbnb, "../data/airbnb_clean.csv")
+# pattern
+readr::write_csv(dataframe, "path/file.csv")
+```
+
+### Export to Excel
+```{r}
+writexl::write_xlsx(airbnb, "../data/sirbnb_clean/xlsx")
+
+# patter
+writexl:write_xlsx(dataframe, "path/file.xlsx")
+```
+
+Import data into R:
+```{r}
+readr::read_csv("../data/file.csv")
+
+readxl::read_excel("../data/file.xlsx")
+```
+
+Export data out of R:
+```{r}
+readr::write_csv(df, "../data/file.csv")
+
+writexl::write_xlsx(df, "../data/file.xlsx")
+```
+
+## 3.1 SQLite Databases with DBI
+ 1. connect the database
+ 2. read a table or run a SQL query
+ 3. disconnect when finished
+
+### Connect to a SQLite database
+```{r}
+# con = connection object used to communivate with database
+con = DBI::dbConnect( # create database connection
+  RSQLite::SQLite(),  # database type is SQLite
+  "../data/midwest_airbnb.db"  # location of database
+)
+```
+
+### Read an entire table
+```{r}
+listings = DBI::dbReadTable(con, "listings") |> # read an entire table from the database
+  tibble::as_tibble() # convert result into a tibble
+```
+
+### Pipe
+```{r eval=FALSE}
+data |>
+  function()
+```
+
+`|>|` -> passes the result on the LEFT into the function on the RIGHT
+- read pipe top to bottom as a sequence of steps
+
+### Run a SQL query
+```{r}
+DBI::dbGetQuery( # sends SQL to the database and returns the result
+  con, 
+  "SQL QUERY"
+)
+```
+
+### Disconnect 
+Closes the database connection 
+```{r}
+DBI::dbDisconnect(con)
+```
+
+### EXAM QUICK FIND
+
+SQLite database → `RSQLite::SQLite()`
+
+Connect → `DBI::dbConnect()`
+
+Read whole table → `DBI::dbReadTable()`
+
+Run SQL → `DBI::dbGetQuery()`
+
+All SQL columns → `SELECT *`
+
+Specific SQL columns → `SELECT column1, column2`
+
+Close connection → `DBI::dbDisconnect()`
+
+Pipe → `|>`
+
+# 4. Data Wrangling with DPLYR
+
+## 4.1 dplyr Quick Recognition Guide
+
+When reading a question, identify what it is asking you to do:
+
+- **Keep certain ROWS** → `dplyr::filter()`
+- **Keep certain COLUMNS** → `dplyr::select()`
+- **CREATE or CHANGE a column** → `dplyr::mutate()`
+- **SORT rows** → `dplyr::arrange()`
+- **Split data into groups/categories** → `dplyr::group_by()`
+- **Calculate a statistic for each group** → `dplyr::summarise()`
+- **COUNT observations in categories** → `dplyr::count()`
+- **Apply the SAME function to multiple columns** → `dplyr::across()`
+- **Keep all rows from left table + add matches** → `dplyr::left_join()`
+- **Keep only matches in BOTH tables** → `dplyr::inner_join()`
+
+## 4.2 filter() - keep certain rows
+
+Use `dplyr::filter()` when the question asks you to keep observations/rows that meet a condition.
+
+Common wording:
+
+"only"
+"where"
+"greater than"
+"less than"
+"equal to"
+"at least"
+
+### Template
+```{r}
+data |>
+  dplyr::filter(condition)
+```
+
+### IMPORTANT OPERATORS
+
+```{r eval=FALSE}
+x == 5       # equal to
+x != 5       # not equal to
+x > 5        # greater than
+x >= 5       # greater than or equal to
+x < 5        # less than
+x <= 5       # less than or equal to
+
+condition1 & condition2   # AND - BOTH must be true
+condition1 | condition2   # OR - at least ONE must be true
+```
+
+### CLASS-STYLE EXAMPLE
+
+Keep entire homes/apartments that accommodate at least 4 people:
+
+```{r eval=FALSE}
+listings |>
+  dplyr::filter(
+    room_type == "Entire home/apt" & accommodates >= 4
+  )
+```
+
+## 4.3 select() - keep certain columns
+Use `dplyr::select()` when the question asks which VARIABLES/COLUMNS you want to keep.
+
+### Template
+```{r}
+data |>
+  dplyr::select(column1, column2, column3)
+```
+
+REMEMBER:
+
+`filter()` = ROWS
+
+`select()` = COLUMNS
+
+## 4.4 mutate() - create or change columns
+Use `dplyr::mutate()` when asked to:
+
+"create a new variable"
+"add a column"
+"calculate a new variable"
+"convert/change a variable"
+
+### Template
+```{r}
+data |>
+  dplyr::mutate(
+    new_variable = calculation
+  )
+```
+
+### CLASS EXAMPLE — Price Per Person
+
+```{r eval=FALSE}
+listings |>
+  dplyr::mutate(
+    price_per_person = price / accommodates
+  )
+```
+
+This creates a NEW column called `price_per_person`.
+
+## 4.5 arrange() - sort rows
+Use `dplyr::arrange()` when asked to:
+
+"sort"
+"rank"
+"highest"
+"lowest"
+"cheapest"
+"most expensive"
+
+### Ascending - LOWEST TO HIGHEST
+```{r}
+data |>
+  dplyr::arrange(price)
+```
+
+### Descending - HIGHEST TO LOWEST
+```{r}
+data |>
+  dplyr::arrange(dplyr::desc(price))
+```
+
+REMEMBER:
+
+```{r eval=FALSE}
+dplyr::arrange(price)
+```
+
+= LOW → HIGH
+
+```{r eval=FALSE}
+dplyr::arrange(dplyr::desc(price))
+```
+
+= HIGH → LOW
+
+## 4.6 Combining mutate(), select(), and arrange()
+
+### CLASS EXAMPLE — Cheapest Listings Per Person
+
+```{r eval=FALSE}
+listings |>
+  dplyr::mutate(
+    price_per_person = price / accommodates
+  ) |>
+  dplyr::select(
+    city,
+    host_name,
+    name,
+    price,
+    accommodates,
+    price_per_person
+  ) |>
+  dplyr::arrange(price_per_person) |>
+  head(3)
+```
+
+LOGIC:
+
+1. `mutate()` → create price per person
+2. `select()` → keep columns we want to see
+3. `arrange()` → cheapest first
+4. `head(3)` → show first 3
+
+### group_by() and summarise()
+Use these when asked for a statistic FOR EACH GROUP
+
+Ask TWO questions:
+
+**1. What defines the groups?**
+
+That goes inside:
+
+```{r eval=FALSE}
+dplyr::group_by()
+```
+
+**2. What number/statistic do I want for each group?**
+
+That goes inside:
+
+```{r eval=FALSE}
+dplyr::summarise()
+```
+
+### TEMPLATE
+```{r}
+data |>
+  dplyr::group_by(group_variable) |>
+  dyplr::summarise(
+    result = calculation
+  )
+```
+
+### EXAMPLE — Average Price by City
+
+```{r eval=FALSE}
+listings |>
+  dplyr::group_by(city) |>
+  dplyr::summarise(
+    avg_price = mean(price)
+  )
+```
+
+`city` = what creates the groups
+
+`price` = variable being summarized
+
+## 4.8 dplyr::n() - count rows within groups
+
+Use:
+
+```{r eval=FALSE}
+dplyr::n()
+```
+
+to count the number of observations in each group.
+
+IMPORTANT:
+
+```{r eval=FALSE}
+dplyr::n()
+```
+
+takes NO argument.
+
+NOT:
+
+```{r eval=FALSE}
+dplyr::n(listings)
+```
+
+### CLASS EXAMPLE — Job Postings by Category
+
+```{r eval=FALSE}
+jobs |>
+  dplyr::group_by(category) |>
+  dplyr::summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote)
+  )
+```
+
+Professor's logic:
+
+We are changing the **unit of analysis** from an individual job posting to a category.
+
+## 4.9 count() - quick counts by category
+if you ONLY need to know how many observations are in each category, `dplyr::count()` is the shortcut
+
+## CLASS EXAMPLE
+
+```{r eval=FALSE}
+listings |>
+  dplyr::count(city)
+```
+
+This is a shortcut for:
+
+```{r eval=FALSE}
+listings |>
+  dplyr::group_by(city) |>
+  dplyr::summarise(
+    count = dplyr::n()
+  )
+```
+
+### PROFESSOR'S COMPARISON
+
+```{r eval=FALSE}
+listings |>
+  dplyr::group_by(city) |>
+  dplyr::summarise(count = dplyr::n())
+
+listings |>
+  dplyr::count(city)
+
+table(listings$city)
+```
+
+`count()` does the grouping and counting for you.
+
+## 4.10 Full filter() + group_by() + summarise() Example
+
+### CLASS EXAMPLE
+
+Question:
+
+For entire homes/apartments that accommodate at least 4 people, what is the median price in each city?
+
+```{r eval=FALSE}
+listings |>
+  dplyr::filter(
+    room_type == "Entire home/apt" & accommodates >= 4
+  ) |>
+  dplyr::group_by(city) |>
+  dplyr::summarise(
+    median_price = median(price)
+  ) -> q2
+
+q2
+```
+
+LOGIC:
+
+1. `filter()` → which listings qualify?
+2. `group_by(city)` → calculate separately for each city
+3. `summarise()` → calculate median price
+
+## 4.11 across() - same operation on multiple columns
+Use `dplyr::across()` when the SAME function needs to be applied to MULTIPLE columns.
+Think:
+
+> WHICH columns + WHAT function?
+
+### PROFESSOR'S CLASS EXAMPLE
+
+Without `across()`:
+
+```{r eval=FALSE}
+jobs = postings |>
+  dplyr::select(
+    company,
+    location_state,
+    remote,
+    posted_at,
+    last_seen_at
+  ) |>
+  dplyr::filter(remote == 1) |>
+  dplyr::mutate(
+    posted_at = as.Date(posted_at),
+    last_seen_at = as.Date(last_seen_at),
+    days_open = as.numeric(last_seen_at - posted_at)
+  )
+```
+
+With `across()`:
+
+```{r eval=FALSE}
+jobs = postings |>
+  dplyr::select(
+    company,
+    title,
+    location_state,
+    remote,
+    category,
+    posted_at,
+    last_seen_at
+  ) |>
+  dplyr::mutate(
+    dplyr::across(
+      dplyr::ends_with("_at"),
+      as.Date
+    ),
+    days_open = as.numeric(last_seen_at - posted_at)
+  )
+```
+
+### HOW TO READ THIS
+
+```{r eval=FALSE}
+dplyr::across(
+  dplyr::ends_with("_at"),
+  as.Date
+)
+```
+
+means:
+
+1. `dplyr::ends_with("_at")` = WHICH columns?
+2. `as.Date` = WHAT function should be applied?
+
+## 4.12 left_join() vs inner_join()
+
+A JOIN combines information from two tables using a variable that connects the tables
+
+### LEFT JOIN
+Use `dplyr::left_join()` when you MUST keep all observations from the LEFT/FIRST table.
+
+```{r eval=FALSE}
+left_table |>
+  dplyr::left_join(right_table, by = "id")
+```
+
+KEY IDEA:
+
+**LEFT JOIN = PROTECT THE LEFT TABLE**
+If a row in the left table does NOT have a match in the right table:
+
+- the row STAYS
+- information from the right table becomes `NA`
+
+Example:
+
+```{r eval=FALSE}
+listings |>
+  dplyr::left_join(hosts, by = "host_id")
+```
+
+All rows from `listings` stay.
+
+### INNER JOIN
+Use `dplyr::inner_join()` when you ONLY want observations that have matches in BOTH tables.
+
+```{r eval=FALSE}
+left_table |>
+  dplyr::inner_join(right_table, by = "id")
+```
+
+KEY IDEA:
+
+**INNER JOIN = ONLY MATCHES**
+
+Rows without a match are DROPPED.
+
+### JOIN QUICK COMPARISON
+
+`left_join()`:
+
+Keep ALL rows from LEFT table.
+
+Unmatched left rows → stay with `NA`.
+
+Unmatched right rows → dropped.
+
+
+`inner_join()`:
+
+Keep ONLY matches in BOTH tables.
+
+Unmatched left rows → dropped.
+
+Unmatched right rows → dropped.
+
+### THE by ARGUMENT
+
+```{r eval=FALSE}
+by = "host_id"
+```
+
+means:
+
+Use the `host_id` column to match observations between the two tables.
+
+## 4.13 DPLYR EXAM DECISION PROCESS
+
+When you see a data wrangling question, ask:
+
+**Do I need certain ROWS?**
+
+→ `dplyr::filter()`
+
+**Do I need certain COLUMNS?**
+
+→ `dplyr::select()`
+
+**Do I need to CREATE/CHANGE a variable?**
+
+→ `dplyr::mutate()`
+
+**Do I need to SORT?**
+
+→ `dplyr::arrange()`
+
+**Do I need a statistic for EACH category/group?**
+
+→ `dplyr::group_by()` + `dplyr::summarise()`
+
+**Do I just need COUNTS by category?**
+
+→ `dplyr::count()`
+
+**Do I need the SAME transformation on multiple columns?**
+
+→ `dplyr::across()`
+
+**Do I need to combine two tables and KEEP everything from the first?**
+
+→ `dplyr::left_join()`
+
+**Do I need to combine two tables and KEEP ONLY matches?**
+
+→ `dplyr::inner_join()`
+
+
+## 4.14 COMMON DPLYR MISTAKES
+
+### Mistake 1: filter vs select
+
+```{r eval=FALSE}
+# ROW condition
+dplyr::filter(price > 200)
+
+# COLUMNS
+dplyr::select(city, price)
+```
+
+### Mistake 2: = vs ==
+
+```{r eval=FALSE}
+room_type == "Entire home/apt"
+```
+
+Use `==` when testing equality.
+
+### Mistake 3: AND vs OR
+
+```{r eval=FALSE}
+condition1 & condition2
+```
+
+BOTH must be true.
+
+```{r eval=FALSE}
+condition1 | condition2
+```
+
+At least ONE must be true.
+
+### Mistake 4: descending order
+
+```{r eval=FALSE}
+dplyr::arrange(dplyr::desc(price))
+```
+
+`desc()` goes around the VARIABLE.
+
+### Mistake 5: n() does NOT take the data frame
+
+```{r eval=FALSE}
+dplyr::n()
+```
+
+NOT:
+
+```{r eval=FALSE}
+dplyr::n(listings)
+```
+
+### Mistake 6: group by the category, summarize the numeric variable
+
+For "average price for each city":
+
+```{r eval=FALSE}
+dplyr::group_by(city) |>
+dplyr::summarise(avg_price = mean(price))
+```
+
+NOT `group_by(price)`.
+
+# 5. APIs & Structured Data
+
+## 5.1 Recognizing an API Problem
+If the question gives me an **API endpoint** or asks me to retrieve data from an API, think:
+```{r eval=FALSE}
+httr2::request()
+```
+An APR allows programs to request strucutred data. The response will often be JSON.
+
+### API vs Wed Scraping
+API:
+```{r}
+httr2::request()
+```
+Use when data is provided through an API endpoint.
+
+Web scraping:
+```{r eval=FALSE}
+rvest::read_html()
+```
+Use when extracting information from a webpage/HTML
+
+### PROFESSOR'S CINCINNATI API EXAMPLE
+
+```{r eval=FALSE}
+httr2::request(
+  "https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json"
+)
+```
+
+`httr2::request()` starts the API request.
+
+## 5.2 Adding Query parameters
+Use:
+```{r}
+httr2::req_url_query() # URL
+```
+When I need to send query parameters with an API request.
+
+### PROFESSOR'S EXAMPLE
+
+```{r eval=FALSE}
+httr2::request("https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json") |>
+  httr2::req_url_query("$limit" = 5) # tells the API to return up to **5 records/rows**
+```
+
+## 5.3 Performing the API request
+after building the request, use:
+```{r}
+httr2::req_perform()
+```
+to actually **send/perform the API request**
+
+### HOW TO READ THIS
+
+```text
+httr2::request()        → WHERE am I requesting data from?
+httr2::req_url_query()  → WHAT query parameters am I sending?
+httr2::req_perform()    → SEND/perform the request
+resp_body_string()  → get the response body as a STRING
+```
+## 5.4 Extracting the API response
+```{r}
+# to extract the body/content of the API response as a string of text
+httr2::resp_body_string()
+```
+
+## 5.5 converting JSON into R
+```{r}
+jsonlite::fromJSON()
+```
+to convert data **FROM JSON into an R object/data structure**
+JSON -> R # fromJSON()
+
+### READ THE PIPELINE TOP TO BOTTOM
+
+```text
+httr2::request()
+→ WHERE am I requesting data from?
+
+httr2::req_url_query()
+→ WHAT query parameters am I adding?
+
+httr2::req_perform()
+→ SEND the API request
+
+httr2::resp_body_string()
+→ get the response body as a STRING
+
+jsonlite::fromJSON()
+→ convert the JSON into an R object/data structure
+```
+## 5.6 API Authentication and headers
+Some APIs require indentifying information or authentication
+
+```{r}
+httr2::req_headers()
+```
+to add required headers to an API request
+
+### PROFESSOR'S USAJOBS EXAMPLE
+
+```{r eval=FALSE}
+httr2::req_headers(
+  Host = "data.usajobs.gov",
+  "User-Agent" = "oneallej@miamioh.edu",
+  "Authorization-Key" = Sys.getenv("USAJOBS_API_KEY")
+)
+```
+
+### API KEYS
+
+```{r eval=FALSE}
+Sys.getenv("USAJOBS_API_KEY")
+```
+
+retrieves the API key from an environment variable.
+
+If an API requires credentials/authentication:
+
+```{r eval=FALSE}
+httr2::req_headers()
+```
+
+If the API key is stored as an environment variable:
+
+```{r eval=FALSE}
+Sys.getenv("NAME_OF_KEY")
+```
+
+## 5.7 query parameters vs authentication
+`httr2::req_url_query()` tells the API **what data/results I want**
+
+### PROFESSOR'S USAJOBS EXAMPLE
+
+```{r eval=FALSE}
+httr2::req_url_query(
+  Keyword = "Data Analyst",
+  ResultsPerPage = 500
+)
+```
+
+This means:
+
+```text
+Keyword = "Data Analyst"
+→ search for jobs using the keyword "Data Analyst"
+
+ResultsPerPage = 500
+→ return up to 500 results per page
+```
+## 5.8 Flattening nested JSON
+```{r}
+# converts JSON into an R object
+# flattens nested information to make it easier to work with
+jsonlite::fromJSON(flatten=TRUE)
+```
+
+## 5.9 Assignment at the end of a pipeline
+```{r}
+# save the final name of the pipline as `usa_jobs_data`
+...|>
+  function() -> objectname
+```
+
+## 5.10 Extracting and Cleaning API results
+After retrieving API data, I may need to navigate the returned structure to find the actual observation
+
+### PROFESSOR'S USAJOBS EXAMPLE
+
+```{r eval=FALSE}
+usa_jobs_df = usa_jobs_data$SearchResult$SearchResultItems
+```
+
+Read this from left to right:
+
+```text
+usa_jobs_data
+→ SearchResult
+→ SearchResultItems
+```
+
+This extracts the part of the API response containing the job results.
+
+### Selecting and renaming columns
+```{r}
+jobs_small = usa_jobs_df |>
+  dplyr::select(
+    title = MatchedObjectDescriptor.PositionTitle,
+    department = MatchedObjectDescriptor.DepartmentName,
+    location = MatchedObjectDescriptor.PositionLocationDisplay
+  )
+```
+
+Inside `dplyr::select()`:
+
+```{r eval=FALSE}
+new_name = old_name
+```
+
+means:
+
+> Select the existing column AND rename it.
+
+If I need to keep AND rename a column:
+
+```{r eval=FALSE}
+dplyr::select(
+  new_name = old_name
+)
+```
+
+## 5.11 Converting API Dates
+API data may contain dates stored as character/text instead of the Date data type
+### PROFESSOR'S EXAMPLE
+
+```{r eval=FALSE}
+ohio_df |>
+  dplyr::mutate(date = lubridate::ymd(date)) |>
+  dplyr::filter(date >= "2026-09-01") -> ohio_df_sept_2026
+```
+
+### What this does
+```{r eval=FALSE}
+lubridate::ymd(date)
+```
+Interprets the values as:
+```text
+Y = year
+M = month
+D = day
+```
+And converts the column to the **Date data type**
+### DATE FORMAT RECOGNITION
+
+```{r eval=FALSE}
+lubridate::ymd(date)  # year-month-day
+lubridate::mdy(date)  # month-day-year
+lubridate::dmy(date)  # day-month-year
+```
+
+### Filtering dates
+dates can be filtered after they are converted to the Date data type
+```{r eval=FALSE}
+dplyr::filter(date >= "2026-09-01")
+```
+
+## 5.12 FULL API TEMPLATE — USAJobs Class Example
+
+### HOW DO I RECOGNIZE THIS?
+
+If I need to:
+
+1. request data from an API
+2. specify search/query parameters
+3. provide authentication
+4. perform the request
+5. retrieve the response
+6. convert JSON into R
+
+use this overall pattern.
+
+### PROFESSOR'S USAJOBS EXAMPLE
+
+```{r eval=FALSE}
+usa_jobs_data = 
+httr2::request("https://data.usajobs.gov/api/search") |>
+  httr2::req_url_query(
+    Keyword = "Data Analyst",
+    ResultsPerPage = 500
+  ) |>
+  httr2::req_headers(
+    Host = "data.usajobs.gov",
+    "User-Agent" = "oneallej@miamioh.edu",
+    "Authorization-Key" = Sys.getenv("USAJOBS_API_KEY")
+  ) |>
+  httr2::req_perform() |>
+  httr2::resp_body_string() |>
+  jsonlite::fromJSON(flatten = TRUE) -> usa_jobs_data
+```
+
+### READ IT IN ORDER
+
+```text
+httr2::request()
+→ WHERE am I requesting data from?
+
+httr2::req_url_query()
+→ WHAT data/results am I requesting?
+
+httr2::req_headers()
+→ WHAT information/authentication does the API need from me?
+
+httr2::req_perform()
+→ SEND the request
+
+httr2::resp_body_string()
+→ extract the response body as a string
+
+jsonlite::fromJSON(flatten = TRUE)
+→ convert JSON to R and flatten nested data
+
+-> usa_jobs_data
+→ save the final result
+```
+
+### THEN EXTRACT THE JOB RESULTS
+
+```{r eval=FALSE}
+usa_jobs_df = usa_jobs_data$SearchResult$SearchResultItems
+```
+
+### KEEP AND RENAME NEEDED COLUMNS
+
+```{r eval=FALSE}
+jobs_small = usa_jobs_df |>
+  dplyr::select(
+    title = MatchedObjectDescriptor.PositionTitle,
+    department = MatchedObjectDescriptor.DepartmentName,
+    location = MatchedObjectDescriptor.PositionLocationDisplay
+  )
+```
+
+Remember inside `select()`:
+
+```{r eval=FALSE}
+new_name = old_name
+```
+
+# 6. Web scraping with rvest
+## 6.1 Check permission before scraping
+
+check whether the site's robots.txt allows the path.
+### PROFESSOR'S EXAMPLE
+
+```{r eval=FALSE}
+robotstxt::paths_allowed(
+  paths = "/jobs",
+  domain = "www.indeed.com",
+  bot = "*"
+)
+```
+
+### Interpretation
+TRUE -> path is allowed
+FALSE -> path is not allowed
+
+`bot = "*"` refers to the rule for all/general bots
+
+### EXAM RECOGNITION
+
+Check whether scraping a path is allowed:
+
+```{r eval=FALSE}
+robotstxt::paths_allowed()
+```
+
+## 6.2 Reading a webpage into R
+After determining that scraping is allowed, use:
+```{r}
+rvest::read_html()
+```
+to read the webpage's HTML into R
+
+### PROFESSOR'S MIAMI COURSE BULLETIN EXAMPLE
+
+```{r eval=FALSE}
+isa_page_in_r = rvest::read_html(
+  "https://bulletin.miamioh.edu/courses-instruction/isa/"
+)
+```
+
+### RECOGNITION
+
+```{r eval=FALSE}
+rvest::read_html()
+```
+
+→ read/get the webpage HTML into R
+
+It does NOT yet extract the specific information I want from the page.
+
+## 6.3 Selecting HTML Elements
+After reading the webpage into R, use:
+```{r}
+rvest::html_elements()
+```
+to find/select specific HTML elements from the page.
+
+### PROFESSOR'S COURSE BULLETIN EXAMPLE
+
+```{r eval=FALSE}
+isa_page_in_r |>
+  rvest::html_elements(
+    "#sc_sccoursedescs > div > p.courseblocktitle > strong"
+  )
+```
+
+The text inside `html_elements()` is a **CSS Selector**
+### RECOGNITION
+
+```{r eval=FALSE}
+rvest::read_html()
+```
+
+→ get/read the webpage HTML
+
+```{r eval=FALSE}
+rvest::html_elements("CSS SELECTOR")
+```
+
+→ find/select the elements I want from the webpage
+
+## 6.4 Extracting Test from HTML Elements
+After selecting HTML elements, use:
+```{r}
+rvest::html_text2()
+```
+
+### READ THE PIPELINE
+
+```text
+isa_page_in_r
+→ start with the webpage already read into R
+
+html_elements("CSS SELECTOR")
+→ FIND the desired HTML elements
+
+html_text2()
+→ EXTRACT the text from those elements
+
+-> isa_titles
+→ SAVE the result as isa_titles
+```
+
+### WEB SCRAPING PIPELINE
+
+```text
+robotstxt::paths_allowed()
+→ CAN I scrape the path?
+
+rvest::read_html()
+→ GET the webpage HTML
+
+rvest::html_elements()
+→ FIND/select the elements I want
+
+rvest::html_text2()
+→ EXTRACT their text
+```
+
+## 6.5 CSS Selectors + checking your selector
+A CSS selector tells `html_elements()` which parts of the HTML to select.
+### PROFESSOR'S WORKFLOW
+
+1. Find/highlight what you want on the webpage
+2. Inspect the HTML
+3. Copy/find a CSS selector
+4. Test the selector in R
+5. Check `length()` before trusting it
+
+A more general selector can work across multiple cards:
+
+```text
+div > ul > li:nth-child(1) > span
+```
+
+### CHECK THE NUMBER OF MATCHES
+
+```{r eval=FALSE}
+classes = page |>
+  rvest::html_elements("div > ul > li:nth-child(1) > span") |>
+  rvest::html_text2()
+
+length(classes)
+```
+
+## 6.6 `html_element()` vs `html_elements()`
+
+```{r eval=FALSE}
+rvest::html_element()
+```
+
+→ selects one/first matching element
+
+```{r eval=FALSE}
+rvest::html_elements()
+```
+
+→ selects all matching elements
+
+## 6.7 Scraping HTML Tables
+
+If the webpage contains an HTML table, use:
+
+```{r eval=FALSE}
+rvest::html_elements("table")
+```
+
+to find the tables, followed by:
+
+```{r eval=FALSE}
+rvest::html_table()
+```
+
+to convert the HTML tables into R tabular data.
+
+### PROFESSOR'S PLANE CRASH EXAMPLE
+
+```{r eval=FALSE}
+crash_tables <- crash_page |>
+  rvest::html_elements("table") |>
+  rvest::html_table()
+
+crash_df = crash_tables[[1]]
+```
+
+### READ THE CODE
+
+```text
+html_elements("table")
+→ find the HTML tables on the webpage
+
+html_table()
+→ convert the HTML tables into R tables
+
+crash_tables[[1]]
+→ extract the FIRST table from the resulting list
+```
+
+### LIST REMINDER
+
+```{r eval=FALSE}
+x[1]
+```
+
+→ keeps a list containing item 1
+
+```{r eval=FALSE}
+x[[1]]
+```
+
+→ extracts item 1 itself
+
+## 6.8 Extracting HTML Attributes
+
+Sometimes the information I want is stored in an HTML attribute instead of visible text.
+
+Use:
+
+```{r eval=FALSE}
+rvest::html_attr("attribute_name")
+```
+
+### TEXT VS ATTRIBUTE
+
+```{r eval=FALSE}
+rvest::html_text2()
+```
+
+→ extracts the visible TEXT
+
+```{r eval=FALSE}
+rvest::html_attr("href")
+```
+
+→ extracts the value stored in the `href` attribute, usually a link
+
+### ASSIGNMENT 07 EXAMPLE
+
+```{r eval=FALSE}
+website <- pg |>
+  rvest::html_elements("#sidebar-main table td:nth-child(3) strong a") |>
+  rvest::html_attr("href")
+```
+
+### RECOGNITION
+
+If the question asks for:
+
+- visible words/text → `html_text2()`
+- link/URL → often `html_attr("href")`
+
+---
+
+## 6.9 FULL BASIC WEB SCRAPING TEMPLATE
+
+### STEP 1: CHECK PERMISSION
+
+```{r eval=FALSE}
+robotstxt::paths_allowed(
+  paths = "/PATH",
+  domain = "DOMAIN",
+  bot = "*"
+)
+```
+
+`TRUE` → allowed
+
+`FALSE` → not allowed
+
+### STEP 2: READ THE WEBPAGE
+
+```{r eval=FALSE}
+page = rvest::read_html("URL")
+```
+
+### STEP 3: SELECT ELEMENTS
+
+```{r eval=FALSE}
+elements = page |>
+  rvest::html_elements("CSS SELECTOR")
+```
+
+### STEP 4: EXTRACT TEXT
+
+```{r eval=FALSE}
+text = elements |>
+  rvest::html_text2()
+```
+
+### OR EXTRACT AN ATTRIBUTE
+
+```{r eval=FALSE}
+links = elements |>
+  rvest::html_attr("href")
+```
+
+### STEP 5: CHECK NUMBER OF RESULTS
+
+```{r eval=FALSE}
+length(text)
+```
+
+Do not trust a selector just because the code runs.
+
+---
+
+## 6.10 PROFESSOR'S FULL COURSE BULLETIN EXAMPLE
+
+```{r eval=FALSE}
+isa_page_in_r = rvest::read_html(
+  "https://bulletin.miamioh.edu/courses-instruction/isa/"
+)
+
+isa_page_in_r |>
+  rvest::html_elements(
+    "#sc_sccoursedescs > div > p.courseblocktitle > strong"
+  ) |>
+  rvest::html_text2() -> isa_titles
+
+isa_page_in_r |>
+  rvest::html_element(".courseblockdesc") |>
+  rvest::html_text2() -> isa_descs
+
+isa_df = data.frame(
+  title = isa_titles,
+  description = isa_descs
+)
+```
+
+### PROFESSOR'S CSS SELECTOR WORKFLOW
+
+1. Highlight the item on the webpage
+2. Right click → Inspect
+3. Find the HTML containing the item
+4. Copy the selector
+5. Test it
+6. If it selects only one specific item, remove the overly specific part
+
+Professor's example: the copied selector selected only the 24th course, so he removed:
+
+```text
+:nth-child(24)
+```
+
+### EXAM QUICK FIND — WEB SCRAPING
+
+```text
+paths_allowed()   → check permission
+read_html()       → read webpage HTML
+html_elements()   → select ALL matching elements
+html_element()    → select one/first matching element
+html_text2()      → extract visible text
+html_attr("href") → extract a link/attribute
+html_table()      → convert HTML table to R table
+length()          → check number of matches
+```
+
+# 7. SCRAPING MULTIPLE WEBPAGES
+
+## 7.1 Recognizing a Multiple-Page Scraping Problem
+
+Use these ideas when:
+
+- the same information exists on MANY similar webpages
+- the URL changes systematically
+- I need to repeat the same scraping process
+- I see departments, years, page numbers, or other repeated URL values
+
+Professor's key idea:
+
+**DRY = Do Not Repeat Yourself**
+
+Instead of copying the same scraping code many times, automate the repeated process.
+
+---
+
+## 7.2 Building Multiple URLs with `paste0()`
+
+Professor uses department abbreviations:
+
+```{r eval=FALSE}
+dept_abbr = c('acc', 'bus', 'isa', 'mkt')
+```
+
+Inside the loop:
+
+```{r eval=FALSE}
+dept_url = paste0(
+  "https://bulletin.miamioh.edu/courses-instruction/",
+  dept_name,
+  "/"
+)
+```
+
+### RECOGNITION
+
+```{r eval=FALSE}
+paste0()
+```
+
+→ combines character strings with NO spaces between them.
+
+This allows part of a URL to change automatically.
+
+---
+
+## 7.3 `for` Loop — Multiple Webpages
+
+### PROFESSOR'S CLASS 11 EXAMPLE
+
+```{r eval=FALSE}
+dept_abbr = c('acc', 'bus', 'isa', 'mkt')
+
+courses_df = data.frame()
+
+for(dept_name in dept_abbr){
+  cat(rep("-", 25))
+  print(dept_name)
+
+  dept_url = paste0(
+    "https://bulletin.miamioh.edu/courses-instruction/",
+    dept_name,
+    "/"
+  )
+
+  webpage = rvest::read_html(dept_url)
+
+  webpage |>
+    rvest::html_elements("strong") |>
+    rvest::html_text2() -> titles
+
+  webpage |>
+    rvest::html_elements(
+      "#sc_sccoursedescs > div > p.courseblockdesc"
+    ) |>
+    rvest::html_text2() -> descs
+
+  df = data.frame(
+    title = titles,
+    desc = descs
+  )
+
+  df$title[1] |> print()
+
+  courses_df = rbind(courses_df, df)
+
+  cat(rep("-", 25))
+  print("\n")
+}
+```
+
+### WHAT THE IMPORTANT LINES DO
+
+```{r eval=FALSE}
+courses_df = data.frame()
+```
+
+→ creates an empty container before the loop
+
+```{r eval=FALSE}
+for(dept_name in dept_abbr)
+```
+
+→ repeat the code once for each department abbreviation
+
+```{r eval=FALSE}
+dept_url = paste0(...)
+```
+
+→ build the URL for the current department
+
+```{r eval=FALSE}
+webpage = rvest::read_html(dept_url)
+```
+
+→ read the current department webpage
+
+```{r eval=FALSE}
+df = data.frame(title = titles, desc = descs)
+```
+
+→ create a data frame for the current webpage
+
+```{r eval=FALSE}
+courses_df = rbind(courses_df, df)
+```
+
+→ add the current results to the accumulated results
+
+### LOOP PATTERN
+
+```text
+VALUES TO ITERATE OVER
+        ↓
+EMPTY CONTAINER
+        ↓
+FOR EACH VALUE
+        ↓
+BUILD URL
+        ↓
+READ PAGE
+        ↓
+SCRAPE DATA
+        ↓
+MAKE DATA FRAME
+        ↓
+ADD TO CONTAINER
+```
+
+---
+
+## 7.4 `rbind()` in a Loop
+
+```{r eval=FALSE}
+courses_df = rbind(courses_df, df)
+```
+
+means:
+
+**take the new rows in `df` and add them to `courses_df`.**
+
+This is how the results from each iteration are accumulated.
+
+---
+
+## 7.5 Writing a Custom Scraping Function
+
+Professor's preferred `purrr` approach is to FIRST create a function that scrapes one page.
+
+### PROFESSOR'S FUNCTION
+
+```{r eval=FALSE}
+scrape_mu_bulletin = function(dept_url){
+
+  webpage = rvest::read_html(dept_url)
+
+  webpage |>
+    rvest::html_elements("strong") |>
+    rvest::html_text2() -> titles
+
+  webpage |>
+    rvest::html_elements(
+      "#sc_sccoursedescs > div > p.courseblockdesc"
+    ) |>
+    rvest::html_text2() -> descs
+
+  df = data.frame(
+    title = titles,
+    desc = descs
+  )
+
+  return(df)
+}
+```
+
+### RECOGNITION
+
+```{r eval=FALSE}
+function(dept_url)
+```
+
+→ create a function whose input is a department URL
+
+```{r eval=FALSE}
+return(df)
+```
+
+→ return the scraped data frame as the function's output
+
+### TEST THE FUNCTION ON ONE PAGE
+
+```{r eval=FALSE}
+test = scrape_mu_bulletin(
+  "https://bulletin.miamioh.edu/courses-instruction/bus/"
+)
+```
+
+Always make sure the function works for ONE page before applying it to many pages.
+
+---
+
+## 7.6 Creating a Vector of URLs
+
+Professor's example:
+
+```{r eval=FALSE}
+dept_abbr = c('acc', 'bus', 'isa', 'mkt')
+
+my_urls = paste0(
+  "https://bulletin.miamioh.edu/courses-instruction/",
+  dept_abbr,
+  "/"
+)
+```
+
+Because `dept_abbr` contains four values, `my_urls` contains four URLs.
+
+---
+
+## 7.7 `purrr::map_df()`
+
+Professor then applies the custom function to every URL:
+
+```{r eval=FALSE}
+courses_df_from_purr = purrr::map_df(
+  .x = my_urls,
+  .f = scrape_mu_bulletin
+)
+```
+
+### WHAT THE ARGUMENTS MEAN
+
+```text
+.x = my_urls
+```
+
+→ the vector I am iterating over
+
+```text
+.f = scrape_mu_bulletin
+```
+
+→ the function I want to apply to each value
+
+`map_df()` applies the function and combines the results into a data frame.
+
+### PROFESSOR'S MAP NOTES
+
+- one input → `map_()` type function
+- two inputs → `map2_()` type function
+- three or more inputs → `pmap()` type approach
+
+For the class example there is ONE input: the URL.
+
+---
+
+## 7.8 FULL PURRR TEMPLATE
+
+```{r eval=FALSE}
+scrape_page = function(url){
+
+  page = rvest::read_html(url)
+
+  values = page |>
+    rvest::html_elements("CSS SELECTOR") |>
+    rvest::html_text2()
+
+  df = data.frame(
+    value = values
+  )
+
+  return(df)
+}
+
+urls = paste0(
+  "BASE URL",
+  changing_values,
+  "END"
+)
+
+results = purrr::map_df(
+  .x = urls,
+  .f = scrape_page
+)
+```
+
+### EXAM RECOGNITION
+
+If I see:
+
+```{r eval=FALSE}
+purrr::map_df(.x = urls, .f = scrape_page)
+```
+
+think:
+
+**apply `scrape_page()` to every URL and combine the resulting data frames.**
+
+---
+
+# 8. WEB SCRAPING + DATA CLEANING
+
+## 8.1 Professor's Plane Crash Example
+
+Professor dynamically creates the URL using a year:
+
+```{r eval=FALSE}
+year = 2025
+
+crash_url = paste0(
+  'https://www.planecrashinfo.com/',
+  year,
+  '/',
+  year,
+  '.htm'
+)
+```
+
+Then reads the webpage:
+
+```{r eval=FALSE}
+crash_page <- rvest::read_html(
+  crash_url,
+  encoding = "ISO-8859-1"
+)
+```
+
+### RECOGNITION
+
+`encoding = "ISO-8859-1"` tells `read_html()` which character encoding the webpage uses.
+
+---
+
+## 8.2 Extracting the Table
+
+```{r eval=FALSE}
+crash_tables <- crash_page |>
+  rvest::html_elements("table") |>
+  rvest::html_table()
+
+crash_df = crash_tables[[1]]
+```
+
+### RECOGNITION
+
+```text
+html_elements("table")
+→ find tables
+
+html_table()
+→ convert HTML tables to R tables
+
+[[1]]
+→ extract first table from the list
+```
+
+---
+
+## 8.3 Cleaning Bad Column Names
+
+Professor notes that the first row contains the column names.
+
+First:
+
+```{r eval=FALSE}
+colnames(crash_df) = crash_df[1, ]
+```
+
+→ replace the column names with the values from row 1
+
+Then:
+
+```{r eval=FALSE}
+crash_df = crash_df[-1, ]
+```
+
+→ delete the first row because it has now become the column names
+
+### IMPORTANT SUBSETTING
+
+```text
+crash_df[1, ]
+```
+
+→ first ROW
+
+```text
+crash_df[-1, ]
+```
+
+→ everything EXCEPT the first row
+
+---
+
+## 8.4 Fixing Column Types
+
+Professor then converts `Date` into an actual date:
+
+```{r eval=FALSE}
+crash_df = crash_df |>
+  dplyr::mutate(
+    Date = lubridate::dmy(Date)
+  )
+```
+
+### RECOGNITION
+
+```text
+dmy() → day-month-year
+mdy() → month-day-year
+ymd() → year-month-day
+```
+
+The goal is to make the column the correct DATA TYPE, not to sort it.
+
+---
+
+## 8.5 Professor's Data-Cleaning Perspective
+
+After scraping data, ask:
+
+1. Are the column names correct?
+2. Are the column types correct?
+3. Does information within columns need additional cleaning/splitting?
+
+Professor's Class 12 example focuses primarily on the first two.
+
+---
+
+# 9. SALVAGE REGISTRY — MULTI-PAGE SCRAPING
+
+## 9.1 First Test One Page
+
+Professor first reads ONE page:
+
+```{r eval=FALSE}
+page = rvest::read_html(
+  "https://isa401-salvage.vercel.app/registry?start=1"
+)
+
+classes = page |>
+  rvest::html_elements(".Dreadnought") |>
+  rvest::html_text2()
+
+length(classes)
+```
+
+Professor's comment:
+
+```text
+check this first: one per card
+```
+
+### IMPORTANT
+
+Before building a large scraping process, TEST the selector on one page.
+
+---
+
+## 9.2 Creating Page Start Values
+
+From clicking through the site, the page changes by 50.
+
+Professor creates:
+
+```{r eval=FALSE}
+base = "https://isa401-salvage.vercel.app"
+
+starts = seq(
+  from = 1,
+  to = 351,
+  by = 50
+)
+```
+
+### RECOGNITION
+
+```{r eval=FALSE}
+seq(from = 1, to = 351, by = 50)
+```
+
+creates the sequence of page starting values.
+
+---
+
+## 9.3 Creating a List Container
+
+```{r eval=FALSE}
+pages = vector(
+  "list",
+  length(starts)
+)
+```
+
+This creates an empty list with one position for each page.
+
+---
+
+## 9.4 Professor's Full Salvage Loop
+
+```{r eval=FALSE}
+base = "https://isa401-salvage.vercel.app"
+
+starts = seq(
+  from = 1,
+  to = 351,
+  by = 50
+)
+
+pages = vector(
+  "list",
+  length(starts)
+)
+
+for (i in seq_along(starts)) {
+
+  pg = rvest::read_html(
+    paste0(
+      base,
+      "/registry?start=",
+      starts[i]
+    )
+  )
+
+  pages[[i]] = data.frame(
+
+    class = pg |>
+      rvest::html_elements(
+        "div > ul > li:nth-child(1) > span"
+      ) |>
+      rvest::html_text2(),
+
+    value = pg |>
+      rvest::html_elements(
+        "div > ul > li:nth-child(3) > span"
+      ) |>
+      rvest::html_text() |>
+      readr::parse_number()
+  )
+
+  Sys.sleep(1)
+}
+
+registry = dplyr::bind_rows(pages)
+```
+
+### WHAT EACH IMPORTANT PIECE DOES
+
+```{r eval=FALSE}
+seq_along(starts)
+```
+
+→ gives positions corresponding to the values in `starts`
+
+```{r eval=FALSE}
+starts[i]
+```
+
+→ current page's start value
+
+```{r eval=FALSE}
+pages[[i]]
+```
+
+→ put the current page's data frame into position `i` of the list
+
+```{r eval=FALSE}
+readr::parse_number()
+```
+
+→ extracts/parses the numeric portion of a value
+
+```{r eval=FALSE}
+Sys.sleep(1)
+```
+
+→ pauses for one second between requests
+
+Professor notes that robots.txt asks for this delay.
+
+```{r eval=FALSE}
+dplyr::bind_rows(pages)
+```
+
+→ combine the data frames stored in the list into one data frame
+
+---
+
+## 9.5 Filtering the Final Scraped Data
+
+Professor's example:
+
+```{r eval=FALSE}
+registry |>
+  dplyr::filter(
+    class == "Dreadnought"
+  ) |>
+  dplyr::mutate(
+    value = as.numeric(value)
+  ) -> Dreadnoughts_df
+
+sum(Dreadnoughts_df$value)
+```
+
+Professor's class result:
+
+```text
+224
+```
+
+### RECOGNITION
+
+This example combines MANY concepts:
+
+```text
+read_html()
++ CSS selectors
++ html_elements()
++ html_text()
++ parse_number()
++ for loop
++ paste0()
++ list storage
++ bind_rows()
++ filter()
++ mutate()
++ sum()
+```
+
+---
+
+# 10. GIT + REPRODUCIBILITY
+
+## 10.1 Why Git?
+
+Git is used for **version control**.
+
+It lets you track changes to a project over time instead of manually creating files such as:
+
+```text
+analysis_final.Rmd
+analysis_final2.Rmd
+analysis_REALLYfinal.Rmd
+```
+
+### KEY IDEAS
+
+```text
+Repository (repo)
+→ project being tracked by Git
+
+Commit
+→ saved snapshot/version of changes
+
+Push
+→ send local commits to the remote repository
+
+Pull
+→ bring remote changes to the local repository
+```
+
+### WHY THIS MATTERS FOR ANALYTICS
+
+Scripted analysis improves reproducibility because the steps used to transform/analyze data are recorded in code and can be rerun.
+
+### EXAM RECOGNITION
+
+```text
+Git → version control
+R/R Markdown → reproducible scripted analysis
+Repository → tracked project
+Commit → snapshot of changes
+Push → local to remote
+Pull → remote to local
+```
+
+---
+
+# 11. DATA LANDSCAPE + BUSINESS INTELLIGENCE
+
+## 11.1 Structured Data
+
+Structured data follows a predefined organization/schema.
+
+Think:
+
+```text
+rows + columns
+tables
+relational databases
+CSV-style tabular data
+```
+
+Example:
+
+```text
+customer_id | name | sales
+1           | Ana  | 100
+2           | Ben  | 125
+```
+
+---
+
+## 11.2 Semi-Structured Data
+
+Semi-structured data has organization, but not necessarily a traditional rows-and-columns table.
+
+Important course example:
+
+```text
+JSON
+```
+
+JSON uses keys, values, lists, and nested structures.
+
+This is why API data may need navigation such as:
+
+```{r eval=FALSE}
+usa_jobs_data$SearchResult$SearchResultItems
+```
+
+---
+
+## 11.3 Unstructured Data
+
+Unstructured data does not naturally follow a predefined tabular schema.
+
+Examples can include:
+
+```text
+free-form text
+documents
+images
+audio/video
+```
+
+The important distinction is whether the data already has a predictable structure/schema.
+
+---
+
+## 11.4 BI + THE ANALYTICS JOURNEY
+
+Business Intelligence helps turn data into information that can support business decisions.
+
+For the exam, focus on recognizing where the technical tasks we learned fit:
+
+```text
+DATA SOURCES
+      ↓
+ACQUIRE DATA
+      ↓
+TRANSFORM / CLEAN DATA
+      ↓
+ANALYZE DATA
+      ↓
+COMMUNICATE / USE INSIGHTS
+```
+
+ISA 401 Phase 1 heavily focuses on:
+
+**acquiring + transforming data into analysis-ready formats.**
+
+---
+
+# 12. MASTER PROBLEM-RECOGNITION GUIDE
+
+## 12.1 If I See a CSV
+
+```{r eval=FALSE}
+readr::read_csv()
+```
+
+## 12.2 If I See an Excel File
+
+```{r eval=FALSE}
+readxl::read_excel()
+```
+
+## 12.3 If I See JSON
+
+```{r eval=FALSE}
+jsonlite::fromJSON()
+```
+
+## 12.4 If I See a SQLite Database
+
+```{r eval=FALSE}
+DBI::dbConnect()
+DBI::dbReadTable()
+DBI::dbGetQuery()
+DBI::dbDisconnect()
+```
+
+## 12.5 If I Need Rows Meeting Conditions
+
+```{r eval=FALSE}
+dplyr::filter()
+```
+
+## 12.6 If I Need Certain Columns
+
+```{r eval=FALSE}
+dplyr::select()
+```
+
+## 12.7 If I Need a New/Changed Column
+
+```{r eval=FALSE}
+dplyr::mutate()
+```
+
+## 12.8 If I Need to Sort
+
+```{r eval=FALSE}
+dplyr::arrange()
+```
+
+Descending:
+
+```{r eval=FALSE}
+dplyr::arrange(dplyr::desc(variable))
+```
+
+## 12.9 If I Need Results by Category
+
+```{r eval=FALSE}
+data |>
+  dplyr::group_by(category) |>
+  dplyr::summarise(
+    result = FUNCTION(variable)
+  )
+```
+
+## 12.10 If I Need Counts by Category
+
+```{r eval=FALSE}
+data |>
+  dplyr::count(category)
+```
+
+or
+
+```{r eval=FALSE}
+data |>
+  dplyr::group_by(category) |>
+  dplyr::summarise(
+    count = dplyr::n()
+  )
+```
+
+## 12.11 If I Need the Same Change on Multiple Columns
+
+```{r eval=FALSE}
+dplyr::mutate(
+  dplyr::across(
+    dplyr::ends_with("_at"),
+    as.Date
+  )
+)
+```
+
+## 12.12 If I Need to Combine Tables by a Key
+
+Keep every row from left table:
+
+```{r eval=FALSE}
+dplyr::left_join(
+  x,
+  y,
+  by = "id"
+)
+```
+
+Keep only matching rows:
+
+```{r eval=FALSE}
+dplyr::inner_join(
+  x,
+  y,
+  by = "id"
+)
+```
+
+## 12.13 If I See an API Endpoint
+
+```{r eval=FALSE}
+httr2::request()
+```
+
+Then potentially:
+
+```{r eval=FALSE}
+httr2::req_url_query()
+httr2::req_headers()
+httr2::req_perform()
+httr2::resp_body_string()
+jsonlite::fromJSON()
+```
+
+## 12.14 API Query vs Headers
+
+```text
+req_url_query()
+→ WHAT data/results am I asking for?
+
+req_headers()
+→ WHAT information/authentication does the API need from me?
+```
+
+## 12.15 If I See an API Key
+
+```{r eval=FALSE}
+Sys.getenv("API_KEY_NAME")
+```
+
+Do NOT hard-code a secret API key into code that may be pushed to Git.
+
+## 12.16 If I Need Data From a Webpage's HTML
+
+```{r eval=FALSE}
+rvest::read_html()
+```
+
+Then:
+
+```{r eval=FALSE}
+rvest::html_elements("CSS SELECTOR") |>
+  rvest::html_text2()
+```
+
+## 12.17 If I Need a Link From HTML
+
+```{r eval=FALSE}
+rvest::html_attr("href")
+```
+
+## 12.18 If I Need an HTML Table
+
+```{r eval=FALSE}
+page |>
+  rvest::html_elements("table") |>
+  rvest::html_table()
+```
+
+## 12.19 If I Need the Same Data From Many Similar Pages
+
+Think:
+
+```text
+paste0()
++ for loop
+```
+
+OR:
+
+```text
+custom function
++ purrr::map_df()
+```
+
+## 12.20 If My Scraping Code Runs But Results Look Wrong
+
+CHECK:
+
+```{r eval=FALSE}
+length(result)
+```
+
+Ask:
+
+**How many results SHOULD I have?**
+
+The selector may be too specific even when there is no R error.
+
+---
+
+# 13. COMMON EXAM TRAPS
+
+## Trap 1: API vs Web Scraping
+
+```text
+API endpoint → httr2
+webpage HTML → rvest
+```
+
+## Trap 2: `filter()` vs `select()`
+
+```text
+filter() → ROWS
+select() → COLUMNS
+```
+
+## Trap 3: `mutate()` vs `summarise()`
+
+```text
+mutate() → creates/changes columns while keeping observations
+
+summarise() → produces summary values, often after group_by()
+```
+
+## Trap 4: `req_url_query()` vs `req_headers()`
+
+```text
+query → what I want
+headers → information/authentication API needs from me
+```
+
+## Trap 5: `[ ]` vs `[[ ]]`
+
+```text
+[ ]   → subset while keeping structure
+[[ ]] → extract an element
+```
+
+## Trap 6: `html_elements()` vs `html_text2()`
+
+```text
+html_elements() → FIND/select
+html_text2()    → EXTRACT text
+```
+
+## Trap 7: Code Runs ≠ Code Is Correct
+
+Especially in web scraping.
+
+Always check:
+
+```{r eval=FALSE}
+length()
+head()
+```
+
+and compare the output with what you EXPECT.
+
+## Trap 8: Dates
+
+```text
+ymd() → year-month-day
+mdy() → month-day-year
+dmy() → day-month-year
+```
+
+These convert the TYPE. They do not sort the data.
+
+## Trap 9: `>=` vs `>`
+
+```text
+>= includes boundary
+> excludes boundary
+```
+
+Same idea for:
+
+```text
+<=
+<
+```
+
+## Trap 10: Secret Keys
+
+Never hard-code API keys into code that could be committed to Git.
+
+Use:
+
+```{r eval=FALSE}
+Sys.getenv("KEY_NAME")
+```
+
+---
+
+# 14. FINAL CTRL + F CHEAT SHEET
+
+Search these terms during the exam:
+
+```text
+CSV
+read_csv
+EXCEL
+read_excel
+JSON
+fromJSON
+LIST
+SUBSET
+SQLITE
+dbConnect
+dbReadTable
+dbGetQuery
+FILTER
+SELECT
+MUTATE
+ARRANGE
+GROUP_BY
+SUMMARISE
+COUNT
+ACROSS
+LEFT_JOIN
+INNER_JOIN
+API
+REQUEST
+QUERY
+HEADERS
+API KEY
+Sys.getenv
+FLATTEN
+DATE
+YMD
+MDY
+DMY
+SCRAPE
+ROBOTS
+read_html
+CSS
+html_elements
+html_element
+html_text2
+html_attr
+href
+html_table
+LENGTH
+LOOP
+FOR
+paste0
+rbind
+PURRR
+map_df
+FUNCTION
+bind_rows
+parse_number
+GIT
+STRUCTURED
+SEMI-STRUCTURED
+UNSTRUCTURED
+```
+
+# 15. FAST FUNCTION DICTIONARY
+
+```text
+c()                         → create vector
+names()                     → get/set names
+typeof()                    → inspect type
+
+[ ]                         → subset
+[[ ]]                       → extract one element
+$                           → extract named element/column
+
+readr::read_csv()           → import CSV
+readxl::read_excel()        → import Excel
+jsonlite::fromJSON()        → JSON → R
+readr::write_csv()          → export CSV
+writexl::write_xlsx()       → export Excel
+
+DBI::dbConnect()            → connect to database
+DBI::dbReadTable()          → read database table
+DBI::dbGetQuery()           → execute SQL query
+DBI::dbDisconnect()         → close connection
+
+dplyr::filter()             → rows
+dplyr::select()             → columns
+dplyr::mutate()             → create/change columns
+dplyr::arrange()            → sort rows
+dplyr::group_by()           → create groups
+dplyr::summarise()          → summarize
+dplyr::n()                  → count observations
+dplyr::count()              → group + count
+dplyr::across()             → operation across columns
+dplyr::left_join()          → all left + matches
+dplyr::inner_join()         → matches only
+dplyr::bind_rows()          → combine rows
+
+httr2::request()            → create API request
+httr2::req_url_query()      → add query parameters
+httr2::req_headers()        → add headers/authentication
+httr2::req_perform()        → send request
+httr2::resp_body_string()   → extract response body as string
+
+Sys.getenv()                → retrieve environment variable
+
+lubridate::ymd()            → year-month-day → Date
+lubridate::mdy()            → month-day-year → Date
+lubridate::dmy()            → day-month-year → Date
+
+robotstxt::paths_allowed()  → check scraping permission
+rvest::read_html()          → read webpage
+rvest::html_elements()      → select matching HTML elements
+rvest::html_element()       → select one/first matching element
+rvest::html_text2()         → extract text
+rvest::html_attr()          → extract HTML attribute
+rvest::html_table()         → HTML table → R table
+
+paste0()                    → concatenate with no separator
+seq()                       → create sequence
+seq_along()                 → sequence along positions
+vector("list", n)           → create list container
+rbind()                     → combine rows
+readr::parse_number()       → extract numeric value
+Sys.sleep()                 → pause execution
+
+function()                  → create function
+return()                    → return function output
+purrr::map_df()             → apply function across inputs and combine data frames
+```

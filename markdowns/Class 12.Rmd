@@ -115,3 +115,35 @@ course_info <- chat$chat_structured(
 )
 ```
 
+## all 50 courses
+```{r}
+chat = ellmer::chat_openai(
+  model= "gpt-5.6-luna", 
+  params = ellmer::params(reasoning_effort = "none")
+)
+
+course_list = rvest::read_html("https://bulletin.miamioh.edu/courses-instruction/isa/")|>
+  rvest::html_elements(".courseblock")|>
+  rvest::html_text2() |> # returns a chr vector
+  as.list() # so as.list converts it to a list to match the example
+
+type_course = ellmer::type_object(
+  name = ellmer::type_string(
+    description = "Name of the course. For example, ISA 235. Information technology and Interlligent Enterprise. Do not include the paranteses for the credit houe and do not end with a period"
+  ), 
+  credit_hours = ellmer::type_integer(
+    description = "Return the credit hours that are listed nect to the course number and title in parantesis. Please do not include the paranteses in you response"),
+  # renamed descriptopn in desc to amke it easier to see the descriptoion field from the element name (sublist neame)
+  desc= ellmer::type_string(description = "The description of the course without the prereqs."),
+  prereqs = ellmer::type_string("List the information after Prerequisity:")
+  )
+
+isa_df = ellmer::parallel_chat_structured(
+  chat = chat, prompts = course_list, type = type_course, 
+  include_tokens = T, include_cost = T
+)
+
+
+```
+
+
